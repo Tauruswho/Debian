@@ -1,0 +1,110 @@
+## Boot into already installed AVLinux on separate disk drive and update upgrade install zfsutils-linux etc ##
+## If using Live USB follow this guide:-  https://docs.zfsbootmenu.org/en/v3.0.x/guides/debian/bookworm-uefi.html#disk-preparation ##
+
+apt install debootstrap gdisk dkms zfsutils-linux zfs-initramfs dosfstools  ## AVLinux has linux-headers installed liquorix kernel ##
+
+zgenhostid -f 0x00bab10c
+
+# Disk to install OS to is /dev/nvme0n1
+# Make sure disk is clear of any other use
+
+zpool labelclear -f /dev/nvme0n1
+wipefs -a /dev/nvme0n1
+sgdisk --zap-all /dev/nvme0n1
+
+# Create EFI boot partition
+
+sgdisk -n 1:1m:+512m -t 1:ef00 /dev/nvme0n1
+sgdisk -n 2:0:-10m -t 2:bf00 /dev/nvme0n1
+
+# Create the zpool called zroot
+
+zpool create  -o ashift=12 -o autotrim=on -O acltype=posixacl -O compression=lz4  -O dnodesize=auto -O relatime=on -O atime=on -O xattr=sa zroot  /dev/nvme0n1p2
+zpool export zroot
+zpool import -R /mnt zroot
+zfs create -o mountpoint=none zroot/ROOT
+
+# Create mountpoints to make it boot I had to set canmount=on then change it later after successful boot to canmount=noauto
+
+zfs create -o canmount=on -o mountpoint=/ -o zroot/ROOT/debian   ## See above ##
+zpool set bootfs=zroot/ROOT/debian zroot
+zfs create -o mountpoint=/home zroot/home
+zfs create -o mountpoint=/tmp zroot/tmp
+zfs create -o mountpoint=/var zroot/var
+zfs create zroot/var/cache
+zfs create zroot/var/games
+zfs create zroot/var/lib
+zfs create zroot/var/lib/docker
+zfs create zroot/var/log
+zfs create zroot/var/mail
+zfs create zroot/var/spool
+zfs create zroot/var/tmp
+zfs create zroot/home/mark
+zfs create zroot/home/mark/Downloads
+zfs create -o mountpoint=none zroot/casa
+zfs create -o mountpoint=none zroot/casa/mark
+zfs create -o mountpoint=/home/mark/Downloads/isos zroot/casa/mark/isos  ## get isos out of snapshots ##
+zfs create -o mountpoint=/home/mark/VirtualBox-VMs zroot/casa/mark/VirtualBox-VMs  ## As Above ##
+ln -s /zroot/casa/mark/VirtualBox-VMs "/home/mark/VirtualBox VMs"
+zfs create zroot/home/mark/Documents
+zfs create zroot/home/mark/Music
+zfs create zroot/home/mark/Music/flac
+zfs create zroot/home/mark/Music/mp3
+zfs create zroot/home/mark/Pictures
+zfs create zroot/home/mark/Videos
+zfs set recordsize=1m zroot/home/mark/Music
+zfs set recordsize=1m zroot/casa/mark/VirtualBox-VMs
+zfs set recordsize=1m zroot/casa/mark/isos
+zfs set recordsize=1m zroot/home/mark/Pictures
+zfs set recordsize=1m zroot/home/mark/Videos
+
+## Create as many datasets as you need for users  /var and /tmp on separate datasets to keep out of snapshots ##
+
+udevadm trigger
+rsync -av --exclude "/proc" --exclude "/sys" --exclude "/dev" --exclude "/mnt" / /mnt
+mkdir /mnt/dev
+mkdir /mnt/sys
+mkdir /mnt/proc
+mkdir /mnt/mnt
+mount --make-private --rbind /dev  /mnt/dev
+mount --make-private --rbind /proc /mnt/proc
+mount --make-private --rbind /sys  /mnt/sys
+chroot /mnt /usr/bin/env DISK=$DISK bash --login
+edit /etc/hostname  ## put your computer name "orac" ##
+edit /etc/hosts     ## put your computer name "orac" ##
+echo "REMAKE_INITRD=yes" > /etc/dkms/zfs.conf
+systemctl enable zfs.target
+systemctl enable zfs-import-cache
+systemctl enable zfs-mount
+systemctl enable zfs-import.target
+zpool set bootfs=zroot/ROOT/debian zroot
+
+## Install and configure ZFSBootMenu ##
+
+zfs set org.zfsbootmenu:commandline="quiet" zroot/ROOT
+zpool set bootfs=zroot/ROOT/debian zroot
+mkfs.vfat -F32 /dev/nvme0n1p1
+edit /etc/fstab ## add your EFI boot partition "UUID=E97B-5ED4 /boot/efi vfat noatime,dmask=0002,fmask=0113 0 0" ##
+## edit out old root partition  "UUID=54e5a762-729c-43a6-a386-bd5f0e1d041a / ext4 noatime 1 1" ##
+rm -rf /boot/efi
+mkdir -p /boot/efi
+mount /boot/efi
+mkdir -p /boot/efi/EFI/ZBM
+mkdir    /boot/efi/EFI/BOOT
+curl -o /boot/efi/EFI/ZBM/VMLINUZ.EFI -L https://get.zfsbootmenu.org/efi
+cp /boot/efi/EFI/ZBM/VMLINUZ.EFI /boot/efi/EFI/BOOT/BOOTX86.EFI
+mount -t efivarfs efivarfs /sys/firmware/efi/efivars
+ln -s /proc/self/mounts /etc/mtab
+apt install refind  ## install to EFI when prompted ##
+update-initramfs -c -k all
+exit
+umount -n -R /mnt
+zpool export zroot
+reboot
+
+## When in new system you can add boot options to the BIOS check with efibootmgr ##
+zpool set cachefile=/etc/zfs/zpool.cache zroot
+zfs set canmount=noauto zroot/ROOT/debian
+efibootmgr -c -d /dev/nvme0n1 -p 1 -l \EFI\ZBM\VMLINUZ.EFI -L AVLinux-zfsbootmenu  ## can't get this to Boot??? ##
+## or "efibootmgr -c -d /dev/nvme0n1 -p 1 -l \EFI\BOOT\BOOTX86.EFI -L AVLinux-zfsbootmenu" ##
+

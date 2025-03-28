@@ -105,6 +105,6 @@ reboot
 ## When in new system you can add boot options to the BIOS check with efibootmgr ##
 zpool set cachefile=/etc/zfs/zpool.cache zroot
 zfs set canmount=noauto zroot/ROOT/debian
-efibootmgr -c -d /dev/nvme0n1 -p 1 -l \EFI\ZBM\VMLINUZ.EFI -L AVLinux-zfsbootmenu  ## can't get this to Boot??? ##
+efibootmgr -c -d /dev/nvme0n1 -p 1 -l \EFI\ZBM\VMLINUZ.EFI -L AVLinux-zfsbootmenu  ## can't get these to Boot???  but works fine via ReFind Boot Manager ##
 ## or "efibootmgr -c -d /dev/nvme0n1 -p 1 -l \EFI\BOOT\BOOTX86.EFI -L AVLinux-zfsbootmenu" ##
 

@@ -26,7 +26,7 @@ zfs create -o mountpoint=none zroot/ROOT
 
 # Create mountpoints to make it boot I had to set canmount=on then change it later after successful boot to canmount=noauto
 
-zfs create -o canmount=on -o mountpoint=/ -o zroot/ROOT/debian   ## See above ##
+zfs create -o canmount=on -o mountpoint=/ zroot/ROOT/debian   ## See above ##
 zpool set bootfs=zroot/ROOT/debian zroot
 zfs create -o mountpoint=/home zroot/home
 zfs create -o mountpoint=/tmp zroot/tmp

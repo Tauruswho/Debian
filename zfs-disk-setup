@@ -78,6 +78,7 @@ systemctl enable zfs-import-cache
 systemctl enable zfs-mount
 systemctl enable zfs-import.target
 zpool set bootfs=zroot/ROOT/debian zroot
+rm /etc/zfs/zpool.cache
 
 ## Install and configure ZFSBootMenu ##
 
@@ -95,7 +96,7 @@ curl -o /boot/efi/EFI/ZBM/VMLINUZ.EFI -L https://get.zfsbootmenu.org/efi
 cp /boot/efi/EFI/ZBM/VMLINUZ.EFI /boot/efi/EFI/BOOT/BOOTX86.EFI
 mount -t efivarfs efivarfs /sys/firmware/efi/efivars
 ln -s /proc/self/mounts /etc/mtab
-apt install refind  ## install to EFI when prompted ##
+apt install refind  ## install to EFI when prompted or refind-install if already installed ##
 update-initramfs -c -k all
 exit
 umount -n -R /mnt

@@ -61,7 +61,7 @@ zfs set recordsize=1m zroot/home/mark/Videos
 ## Create as many datasets as you need for users  /var and /tmp on separate datasets to keep out of snapshots ##
 
 udevadm trigger
-rsync -av --exclude "/proc" --exclude "/sys" --exclude "/dev" --exclude "/mnt" / /mnt
+rsync -av --exclude "/proc" --exclude "/sys" --exclude "/dev" --exclude "/mnt" / /mnt/
 mkdir /mnt/dev
 mkdir /mnt/sys
 mkdir /mnt/proc

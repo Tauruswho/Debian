@@ -1,3 +1,5 @@
+## This going to use zfsbootmenu ##
+
 ## Boot into already installed AVLinux on separate disk drive and update upgrade install zfsutils-linux etc ##
 ## If using Live USB follow this guide:-  https://docs.zfsbootmenu.org/en/v3.0.x/guides/debian/bookworm-uefi.html#disk-preparation ##
 
@@ -24,21 +26,11 @@ zpool export zroot
 zpool import -R /mnt zroot
 zfs create -o mountpoint=none zroot/ROOT
 
-# Create mountpoints to make it boot I had to set canmount=on then change it later after successful boot to canmount=noauto
+# Create mountpoints to make it boot I had to set canmount=on for zroot/ROOT/debian then change it later after successful boot to canmount=noauto
 
 zfs create -o canmount=on -o mountpoint=/ zroot/ROOT/debian   ## See above ##
 zpool set bootfs=zroot/ROOT/debian zroot
 zfs create -o mountpoint=/home zroot/home
-zfs create -o mountpoint=/tmp zroot/tmp
-zfs create -o mountpoint=/var zroot/var
-zfs create zroot/var/cache
-zfs create zroot/var/games
-zfs create zroot/var/lib
-zfs create zroot/var/lib/docker
-zfs create zroot/var/log
-zfs create zroot/var/mail
-zfs create zroot/var/spool
-zfs create zroot/var/tmp
 zfs create zroot/home/mark
 zfs create zroot/home/mark/Downloads
 zfs create -o mountpoint=none zroot/casa
@@ -58,7 +50,7 @@ zfs set recordsize=1m zroot/casa/mark/isos
 zfs set recordsize=1m zroot/home/mark/Pictures
 zfs set recordsize=1m zroot/home/mark/Videos
 
-## Create as many datasets as you need for users  /var and /tmp on separate datasets to keep out of snapshots ##
+## Create as many datasets as you need for users, not going to use separate datstsets for /var and /tmp ##
 
 udevadm trigger
 rsync -av --exclude "/proc" --exclude "/sys" --exclude "/dev" --exclude "/mnt" / /mnt/

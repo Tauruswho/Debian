@@ -1,21 +1,12 @@
 #!/binbash
 
 ## zpool mounted at /mnt
+## zroot/casa for datasets that do not need or want snapshotting
 
 zfs create -o mountpoint=none zroot-1/ROOT
 zfs create -o canmount=on -o mountpoint=/ zroot-1/ROOT/debian  
 zpool set bootfs=zroot-1/ROOT/debian zroot-1
 zfs create -o mountpoint=/home zroot-1/home
-zfs create -o mountpoint=/tmp zroot-1/tmp
-zfs create -o mountpoint=/var zroot-1/var
-zfs create zroot-1/var/cache
-zfs create zroot-1/var/games
-zfs create zroot-1/var/lib
-zfs create zroot-1/var/lib/docker
-zfs create zroot-1/var/log
-zfs create zroot-1/var/mail
-zfs create zroot-1/var/spool
-zfs create zroot-1/var/tmp
 zfs create zroot-1/home/mark
 zfs create zroot-1/home/mark/Downloads
 zfs create zroot-1/home/mark/Documents

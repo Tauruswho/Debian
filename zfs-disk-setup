@@ -23,6 +23,8 @@ sgdisk -n 2:0:-10m -t 2:bf00 /dev/nvme0n1
 
 zpool create  -o ashift=12 -o autotrim=on -O acltype=posixacl -O compression=lz4  -O dnodesize=auto -O relatime=on -O atime=on -O xattr=sa zroot  /dev/nvme0n1p2
 zpool export zroot
+zpool import -d /dev/disk/by-id zroot
+zpool export zroot
 zpool import -R /mnt zroot
 zfs create -o mountpoint=none zroot/ROOT
 

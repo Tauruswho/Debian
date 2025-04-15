@@ -83,9 +83,11 @@ rm -rf /boot/efi
 mkdir -p /boot/efi
 mount /boot/efi
 mkdir -p /boot/efi/EFI/ZBM
+mkdir    /boot/efi/EFI/debian
 mkdir    /boot/efi/EFI/BOOT
 curl -o /boot/efi/EFI/ZBM/VMLINUZ.EFI -L https://get.zfsbootmenu.org/efi
-cp /boot/efi/EFI/ZBM/VMLINUZ.EFI /boot/efi/EFI/BOOT/BOOTX86.EFI
+curl -o /boot/efi/EFI/BOOT/BOOTX86.EFI -L https://get.zfsbootmenu.org/efi/recovery
+curl -o /boot/efi/EFI/debian/VMLINUZ.EFI -L https://get.zfsbootmenu.org/efi
 mount -t efivarfs efivarfs /sys/firmware/efi/efivars
 ln -s /proc/self/mounts /etc/mtab
 apt install refind  ## install to EFI when prompted or refind-install if already installed ##

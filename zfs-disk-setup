@@ -1,4 +1,4 @@
-## This going to use zfsbootmenu ##
+## This setup is going to use zfsbootmenu ##
 
 ## Boot into already installed AVLinux on separate disk drive and update upgrade install zfsutils-linux etc ##
 ## If using Live USB follow this guide:-  https://docs.zfsbootmenu.org/en/v3.0.x/guides/debian/bookworm-uefi.html#disk-preparation ##

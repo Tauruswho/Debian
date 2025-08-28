@@ -1,0 +1,8 @@
+[Unit]
+Description= rsync-duplicate service
+
+[Service]
+ExecStart=/usr/local/bin/rsync-duplicate.sh
+
+[Install]
+WantedBy=multi-user.target
